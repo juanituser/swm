@@ -1,0 +1,12 @@
+# Project concept
+
+**Package theme:** R package for applied spatial and socioeconomic analysis, centred on spatial weight matrices. The user supplies an sf object and specifies a target variable (e.g. robbery counts) and specifies a spatial neighbourhood definition, which determines how the weight matrix W is constructed. Optionally, the user enter contextual variables (e.g. unemployment rate). The package constructs a weight matrix from the geometry, tests for spatial autocorrelation, maps local clusters, and if contextual variables are provided, the package fits a spatial regression model to assess whether those variables explain the observed pattern.
+
+**Target users:** Government analysts, decision-makers, and social organizations who work with georeferenced administrative data and need actionable spatial diagnostics without deep R expertise. It can also be useful for students in diverse academic fields to perform spatial analysis.
+
+sketch of the two classes you plan to design
+
+
+```{r}
+
+```
