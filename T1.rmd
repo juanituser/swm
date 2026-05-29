@@ -11,7 +11,7 @@ Government analysts, decision-makers, and social organizations who work with geo
 
 **1. SpatialWeights:** This class will represent the spatial structure of the dataset. This will include a method that calculate how districts or spatial units relate to each other geographically. The type of contiguity would be a paramenter that the user will enter (rook, queen, knn).
 
-- Attributes: sf_data, method, weights
+- Attributes: sf_data, method
 - Methods: build_matrix()
 
 **2. SpatialAnalysis:** This class will represent the analytical workflow, where takes the weight matrix made before and runs statistical tests on a variable of interest, depending on what the user wants.
@@ -19,24 +19,45 @@ Government analysts, decision-makers, and social organizations who work with geo
 - Attributes: weights, target_var, socioeconomic_var
 - Methods: run_tests()
 
+## Code
+
+### Libraries
+
+For the basic functions, it is necessary to install sf to read, manipulate, and analyze spatial vector data and spdep package, which stores a collection of functions to create spatial weights matrix objects from polygon 'contiguities'. 
 ```{r}
 library(spdep)
 library(sf)
 ```
 
-
+### Read data
+First step is to read the spatial information and return it after validate it and check that is in projected coordinate system. 
 ```{r}
 read_spatial_data <- function(path){
+   if (!is.character(path)) {
+    stop("'path' must be a character string, got: ", class(path))
+  }
+
   if (!file.exists(path)) {
     stop("File not found: ", path)
   }
-  
-  sf_data <- sf::read_sf(path)
+
+  sf_data <- read_sf(path)
+
+  is_longlat <- st_is_longlat(sf_data)
+  if (is_longlat) {
+    warning("Data is in geographic coordinates (degrees). Original CRS: ", st_crs(sf_data)$input,
+    " Reprojecting to EPSG:3857 for more accurate distance calculations. ", "If you want to use a different EPSG, reproject the data before running the tool")
+    sf_data <- st_transform(sf_data, crs = 3857)
+  }
+
   return(sf_data)
 }
 ```
 
+### Spatial Weight Matrix
+Then, it is neccesary to build the weights according different types or methods. In the future, the user is going to choose the method and the function that correspond is gonna be used. Spdep has a function that already do it in a easy way. 
 
+**Queen**
 ```{r}
 create_queen_swm <- function(sf_data) {
   nb <- poly2nb(sf_data, queen = TRUE)
@@ -46,6 +67,7 @@ create_queen_swm <- function(sf_data) {
 ```
 
 
+**Rook**
 ```{r}
 create_rook_swm <- function(sf_data) {
   nb <- poly2nb(sf_data, queen = FALSE) 
@@ -53,8 +75,34 @@ create_rook_swm <- function(sf_data) {
   return(w)
 }
 ```
+For using the number of neighbors is neccesary to use a different function from the same package. 
+
+To build the weights using the KNN method, spdep has a function that already do it but it is neccesary to have the coordinates, so in this case the centroid of each polygon is calculated. 
+
+**KNN**
+```{r}
+create_knn_swm <- function(sf_data, k) {
+  
+  if (!is.numeric(k) || k < 1) {
+    stop("'k' must be a positive integer, got: ", k)
+  }
+  
+  coords <- st_centroid(sf_data) |> st_coordinates()
+  nb     <- knearneigh(coords, k = k) |> knn2nb()
+  w      <- nb2listw(nb, style = "W")
+  
+  return(w)
+}
+```
 
 
 ```{r}
-read_spatial_data("./data.geojson")
+sf <- read_spatial_data("./data.geojson")
+w_queen <- create_queen_swm(sf)
+w_rook <- create_rook_swm(sf)
+w_knn <- create_knn_swm(sf, 5)
+
 ```
+
+In the future, this functions will be used in the method of the SpatialWeights class to get the swm using the type of contiguity and distance criteria chosen. 
+
