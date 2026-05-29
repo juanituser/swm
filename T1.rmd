@@ -20,15 +20,19 @@ Government analysts, decision-makers, and social organizations who work with geo
 - Methods: run_tests()
 
 ```{r}
-library(R6)
 library(spdep)
 library(sf)
 ```
 
 
 ```{r}
-read_spatial_data(path) <- function(path){
+read_spatial_data <- function(path){
+  if (!file.exists(path)) {
+    stop("File not found: ", path)
+  }
   
+  sf_data <- sf::read_sf(path)
+  return(sf_data)
 }
 ```
 
@@ -48,4 +52,9 @@ create_rook_swm <- function(sf_data) {
   w  <- nb2listw(nb, style = "W")
   return(w)
 }
+```
+
+
+```{r}
+read_spatial_data("./data.geojson")
 ```
