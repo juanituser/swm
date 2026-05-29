@@ -1,0 +1,51 @@
+# Project concept
+
+## Package theme: 
+R package for applied spatial and socioeconomic analysis, centred on spatial weight matrices. The user supplies an sf object and specifies a target variable (e.g. robbery counts) and specifies a spatial neighbourhood definition, which determines how the weight matrix W is constructed. Optionally, the user enter contextual variables (e.g. unemployment rate). The package constructs a weight matrix from the geometry, tests for spatial autocorrelation, maps local clusters, and if contextual variables are provided, the package fits a spatial regression model to assess whether those variables explain the observed pattern.
+
+## Target users: 
+
+Government analysts, decision-makers, and social organizations who work with georeferenced administrative data and need actionable spatial diagnostics without deep R expertise. It can also be useful for students in diverse academic fields to perform spatial analysis.
+
+## Classes:
+
+**1. SpatialWeights:** This class will represent the spatial structure of the dataset. This will include a method that calculate how districts or spatial units relate to each other geographically. The type of contiguity would be a paramenter that the user will enter (rook, queen, knn).
+
+- Attributes: sf_data, method, weights
+- Methods: build_matrix()
+
+**2. SpatialAnalysis:** This class will represent the analytical workflow, where takes the weight matrix made before and runs statistical tests on a variable of interest, depending on what the user wants.
+
+- Attributes: weights, target_var, socioeconomic_var
+- Methods: run_tests()
+
+```{r}
+library(R6)
+library(spdep)
+library(sf)
+```
+
+
+```{r}
+read_spatial_data(path) <- function(path){
+  
+}
+```
+
+
+```{r}
+create_queen_swm <- function(sf_data) {
+  nb <- poly2nb(sf_data, queen = TRUE)
+  w  <- nb2listw(nb, style = "W")
+  return(w)
+}
+```
+
+
+```{r}
+create_rook_swm <- function(sf_data) {
+  nb <- poly2nb(sf_data, queen = FALSE) 
+  w  <- nb2listw(nb, style = "W")
+  return(w)
+}
+```
